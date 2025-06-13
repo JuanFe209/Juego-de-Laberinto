@@ -1,3 +1,4 @@
+
 from pygame import *
 ' ' 'Clases requeridas' ' '
 
@@ -51,26 +52,45 @@ class Enemy(GameSprite):
         else: 
             self.rect.x += self.speed
  
+class Wall(sprite.Sprite):
+    def __init__(self, color1, color2, color3, wall_width,wall_height, wall_x, wall_y, player_x):
+        super().__init__()
+        self.color1 = color1
+        self.color2 = color2
+        self.color3 = color3
+        self.width = wall_width
+        self.height = wall_height
+        self.image = Surface([self.width, self.height])
+        self.image.fill((self.color1, self.color2, self.color3))
+        self.rect = self.image.get_rect()
+        self.rect.x = wall_x
+        self.rect.y = wall_y
+
+    def draw_wall(self):
+        draw.rect(window, (self.color1, self.color2, self.color3), (self.rect.x, self.rect.y, self.width, self.height))
 
 
 
-#Escena del juego:
 win_width = 700
 win_height = 500
 window = display.set_mode((win_width, win_height))
 display.set_caption("Maze")
 background = transform.scale(image.load("background.jpg"), (win_width, win_height))
 
-#Personajes del juego:
 packman = Player('hero.png', 5, win_height - 80, 4)
 monster = Enemy('cyborg.png', win_width - 80, 280, 2)
 final = GameSprite('treasure.png', win_width - 120, win_height - 80, 0)
 
+w1 = Wall(150, 0, 0, 200, 20, 100, 100, 0)
+w2 = Wall(0, 200, 0, 200, 20, 100, 150, 0)
+w3 = Wall(250, 0, 0, 20, 200, 500, 100, 0)
 game = True
 clock = time.Clock()
 FPS = 60
 
-#música
+font.init()
+font = font.Font(None, 70)
+lose = font.render('You Lose!', True, (180, 0, 0))
 mixer.init()
 mixer.music.load('jungles.ogg')
 mixer.music.play()
@@ -91,8 +111,18 @@ while game:
         packman.reset()
         monster.reset()
         final.reset()
+        w1.draw_wall()
+        w2.draw_wall()
+        w3.draw_wall()
 
-
+        if sprite.collide_rect(packman, monster) or sprite.collide_rect(packman, w1) or sprite.collide_rect(packman, w2) or sprite.collide_rect(packman, w3):
+            finish = True
+            window.blit(lose, (200, 200))
+        
+        
+        if sprite.collide_rect(packman, final):
+            finish = True
+            window.blit(win, (200, 200))
 
     display.update()
     clock.tick(FPS)
